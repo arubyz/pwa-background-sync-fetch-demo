@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+	<title>PWA Background Synchronization and Fetch Demo</title>
+    <link rel="icon" type="image/png" sizes="36x36" href="./favicon.png">
+</head>
+<body>
+    <h1>Results ...</h1>
+    <ul id="results">
+    </ul>
+    <script>
+        function report(result) {
+            console.log(result);
+            const ul = document.getElementById('results');
+            const li = document.createElement('li');
+            li.innerText = result;
+            ul.appendChild(li);
+        }
+
+        let registration;
+
+        if ("serviceWorker" in navigator) {
+            const serviceWorker = navigator.serviceWorker;
+            if (serviceWorker) {
+			    window.addEventListener("load", () => {
+				    serviceWorker.register("./sw.js").then(result => {
+                        if (!result) {
+                            report('"navigator.serviceWorker.register" returned null or undefined');
+                        } else {
+                            report('service worker registered');
+                            registration = result;
+                            if (!result.backgroundFetch) {
+                                report('"registration.backgroundFetch" is null or undefined');
+                            }
+                            if (!result.pushManager) {
+                                report('"registration.pushManager" is null or undefined');
+                            }
+                            if (!result.sync) {
+                                report('"registration.sync" is null or undefined');
+                            }
+                            if (!result.index) {
+                                report('"registration.index" is null or undefined');
+                            }
+                        }
+                    });
+			    });
+            } else {
+                report('"navigator.serviceworker" is null or undefined');                
+            }
+		} else {
+            report('"navigator" does not contain "serviceworker"');
+        }
+	</script>
+</body>
