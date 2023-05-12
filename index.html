@@ -19,8 +19,32 @@
             ul.appendChild(li);
         }
 
-        let registration;
+        // Check the browser's storage quota
+        // See: https://web.dev/storage-for-the-web/#check
+        if ("storage" in navigator) {
+            const storage = navigator.storage;
+            if (storage) {
+                if ("estimate" in navigator.storage.estimate) {
+                    const estimate = storage.estimate;
+                    if (estimate) {
+                        navigator.storage.estimate().then(quota => {
+                            // quota.usage -> Number of bytes used.
+                            // quota.quota -> Maximum number of bytes available.
+                            const percentageUsed = (quota.usage / quota.quota) * 100;
+                            report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
+                            const remaining = quota.quota - quota.usage;
+                            report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
+                        });
+                    }
+            } else {
+                report('"navigator.storage" is null or undefined');                
+            }
+        } else {
+            report('"navigator" does not contain "storage"');
+        }
 
+        // Check for service worker support and install the service worker
+        let registration;
         if ("serviceWorker" in navigator) {
             const serviceWorker = navigator.serviceWorker;
             if (serviceWorker) {
