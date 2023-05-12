@@ -35,7 +35,11 @@
                             const remaining = quota.quota - quota.usage;
                             report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
                         });
+                    } else {
+                        report('"navigator.storage.estimate" is null or undefined');                
                     }
+                } else {
+                    report('"navigator.storage" does not contain "estimate"');
                 }
             } else {
                 report('"navigator.storage" is null or undefined');                
