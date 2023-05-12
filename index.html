@@ -19,67 +19,59 @@
             ul.appendChild(li);
         }
 
-        // Check the browser's storage quota
-        // See: https://web.dev/storage-for-the-web/#check
-        if ("storage" in navigator) {
-            const storage = navigator.storage;
-            if (storage) {
-                if ("estimate" in navigator.storage.estimate) {
-                    const estimate = storage.estimate;
-                    if (estimate) {
-                        navigator.storage.estimate().then(quota => {
-                            // quota.usage -> Number of bytes used.
-                            // quota.quota -> Maximum number of bytes available.
-                            const percentageUsed = (quota.usage / quota.quota) * 100;
-                            report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
-                            const remaining = quota.quota - quota.usage;
-                            report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
-                        });
-                    } else {
-                        report('"navigator.storage.estimate" is null or undefined');                
-                    }
+        function check(parent_name, parent_value, child_name, body) {
+            if (child_name in parent_value) {
+                const child = parent_value[child_name];
+                if (child) {
+                    return body(child);
                 } else {
-                    report('"navigator.storage" does not contain "estimate"');
+                    report(`"${parent_name}.${child_name}" is null or undefined`);
                 }
             } else {
-                report('"navigator.storage" is null or undefined');                
+                report(`"${parent_name}" does not contain "${child_name}"`);
             }
-        } else {
-            report('"navigator" does not contain "storage"');
         }
+
+        // Check the browser's storage quota
+        // See: https://web.dev/storage-for-the-web/#check
+        check('navigator', navigator, 'storage', storage => {
+            check('navigator.storage', storage, 'estimate', estimate => {
+                navigator.storage.estimate().then(quota => {
+                    // quota.usage -> Number of bytes used.
+                    // quota.quota -> Maximum number of bytes available.
+                    const percentageUsed = (quota.usage / quota.quota) * 100;
+                    report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
+                    const remaining = quota.quota - quota.usage;
+                    report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
+                });
+            });
+        });
 
         // Check for service worker support and install the service worker
         let registration;
-        if ("serviceWorker" in navigator) {
-            const serviceWorker = navigator.serviceWorker;
-            if (serviceWorker) {
-			    window.addEventListener("load", () => {
-				    serviceWorker.register("./sw.js").then(result => {
-                        if (!result) {
-                            report('"navigator.serviceWorker.register" returned null or undefined');
-                        } else {
-                            report('service worker registered');
-                            registration = result;
-                            if (!result.backgroundFetch) {
-                                report('"registration.backgroundFetch" is null or undefined');
-                            }
-                            if (!result.pushManager) {
-                                report('"registration.pushManager" is null or undefined');
-                            }
-                            if (!result.sync) {
-                                report('"registration.sync" is null or undefined');
-                            }
-                            if (!result.index) {
-                                report('"registration.index" is null or undefined');
-                            }
+        check('navigator', navigator, 'serviceWorker', serviceWorker => {
+            window.addEventListener("load", () => {
+                serviceWorker.register("./sw.js").then(result => {
+                    if (!result) {
+                        report('"navigator.serviceWorker.register" returned null or undefined');
+                    } else {
+                        report('service worker registered');
+                        registration = result;
+                        if (!result.backgroundFetch) {
+                            report('"registration.backgroundFetch" is null or undefined');
                         }
-                    });
-			    });
-            } else {
-                report('"navigator.serviceworker" is null or undefined');                
-            }
-		} else {
-            report('"navigator" does not contain "serviceworker"');
-        }
+                        if (!result.pushManager) {
+                            report('"registration.pushManager" is null or undefined');
+                        }
+                        if (!result.sync) {
+                            report('"registration.sync" is null or undefined');
+                        }
+                        if (!result.index) {
+                            report('"registration.index" is null or undefined');
+                        }
+                    }
+                });
+            });
+        });
 	</script>
 </body>
