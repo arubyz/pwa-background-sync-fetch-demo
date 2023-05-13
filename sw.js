@@ -6,3 +6,8 @@ self.addEventListener("install", event => {
 	self.skipWaiting();
 });
 
+self.addEventListener('periodicsync', (event) => {
+	if (event.tag === 'content-sync') {
+		//event.waitUntil(fetchContent());
+	}
+});

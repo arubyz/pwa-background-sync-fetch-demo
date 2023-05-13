@@ -32,6 +32,30 @@
             }
         }
 
+        async function register_periodic_sync(periodicSync) {
+            try {
+                await periodicSync.register(`content-sync`, {
+                    minInterval: 60 * 60 * 1000, // 1 hour
+                });
+                report(`periodic sync registered`);
+            } catch (e) {
+                report(`periodic sync failed to register: ${e}`);
+            }
+        }
+
+        // Ask for periodic background sync permissions
+        navigator.permissions.query({ name: 'periodic-background-sync' })
+        .then(status => {
+            if (status) {
+                report(`"periodic-background-sync" permission status state: ${status.state}`);
+                status.onchange = () => {
+                    report(`"periodic-background-sync" permission status state changed: ${status.state}`);
+                }                
+            } else {
+                report('"periodic-background-sync" permission status is null or undefined');
+            }
+        });
+
         // Check the browser's storage quota
         // See: https://web.dev/storage-for-the-web/#check
         check('navigator', navigator, 'storage', storage => {
@@ -57,6 +81,11 @@
                     } else {
                         report('service worker registered');
                         registration = result;
+                        if (result.periodicSync) {
+                            register_periodic_sync(result.periodicSync);
+                        } else {
+                            report('"registration.periodicSync" is null or undefined');
+                        }
                         if (!result.backgroundFetch) {
                             report('"registration.backgroundFetch" is null or undefined');
                         }
