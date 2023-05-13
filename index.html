@@ -34,11 +34,11 @@
 
         const services = {};
 
-        function check_capabilities() {
-            check('navigator', navigator, 'storage', storage => {
+        async function check_capabilities() {
+            await check('navigator', navigator, 'storage', async storage => {
                 services.storage = storage;
-                check('navigator.storage', storage, 'estimate', estimate => {
-                    services.estimate = estimate;
+                await check('navigator.storage', storage, 'estimate', async estimate => {
+                    services.estimate = await estimate();
                 });
             });
 
@@ -49,15 +49,9 @@
 
         async function check_storage_quota() {
             if (services.estimate) {
-                // See: https://web.dev/storage-for-the-web/#check
-                const quota = await services.estimate();
-
-                // quota.usage -> Number of bytes used.
-                // quota.quota -> Maximum number of bytes available.
-                const percentageUsed = (quota.usage / quota.quota) * 100;
-                report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
-                const remaining = quota.quota - quota.usage;
-                report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
+                const percentageUsed = (services.estimate.usage / services.estimate.quota) * 100;
+                const remaining = services.estimate.quota - services.estimate.usage;
+                report(`Storage estimate: ${percentageUsed.toFixed(1)}% used, ${remaining.toLocaleString()} bytes available`);
             }
         }
 
@@ -123,7 +117,7 @@
         }
 
         async function main() {
-            check_capabilities();
+            await check_capabilities();
             await check_storage_quota();
             await register_service_worker();
             await register_periodic_sync();
