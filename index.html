@@ -19,11 +19,11 @@
             ul.appendChild(li);
         }
 
-        function check(parent_name, parent_value, child_name, body) {
+        function check(parent_name, parent_value, child_name, body = undefined) {
             if (child_name in parent_value) {
                 const child = parent_value[child_name];
                 if (child) {
-                    return body(child);
+                    return budy ? body(child) : undefined;
                 } else {
                     report(`"${parent_name}.${child_name}" is null or undefined`);
                 }
@@ -32,75 +32,103 @@
             }
         }
 
-        async function register_periodic_sync(periodicSync) {
-            try {
-                await periodicSync.register(`content-sync`, {
-                    minInterval: 60 * 60 * 1000, // 1 hour
+        const services = {};
+
+        function check_capabilities() {
+            check('navigator', navigator, 'storage', storage => {
+                services.storage = storage;
+                check('navigator.storage', storage, 'estimate', estimate => {
+                    services.estimate = estimate;
                 });
-                report(`periodic sync registered`);
-            } catch (e) {
-                report(`periodic sync failed to register: ${e}`);
+            });
+
+            check('navigator', navigator, 'serviceWorker', serviceWorker => {
+                services.serviceWorker = serviceWorker;
+            });
+        }
+
+        async function check_storage_quota() {
+            if (services.estimate) {
+                // See: https://web.dev/storage-for-the-web/#check
+                const quota = await services.estimate();
+
+                // quota.usage -> Number of bytes used.
+                // quota.quota -> Maximum number of bytes available.
+                const percentageUsed = (quota.usage / quota.quota) * 100;
+                report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
+                const remaining = quota.quota - quota.usage;
+                report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
             }
         }
 
-        // Ask for periodic background sync permissions
-        navigator.permissions.query({ name: 'periodic-background-sync' })
-        .then(status => {
-            if (status) {
-                report(`"periodic-background-sync" permission status state: ${status.state}`);
-                status.onchange = () => {
-                    report(`"periodic-background-sync" permission status state changed: ${status.state}`);
-                }                
-            } else {
-                report('"periodic-background-sync" permission status is null or undefined');
-            }
-        });
+        let registration = undefined;
 
-        // Check the browser's storage quota
-        // See: https://web.dev/storage-for-the-web/#check
-        check('navigator', navigator, 'storage', storage => {
-            check('navigator.storage', storage, 'estimate', estimate => {
-                navigator.storage.estimate().then(quota => {
-                    // quota.usage -> Number of bytes used.
-                    // quota.quota -> Maximum number of bytes available.
-                    const percentageUsed = (quota.usage / quota.quota) * 100;
-                    report(`Storage quota estimate: you've used ${percentageUsed}% of the available storage`);
-                    const remaining = quota.quota - quota.usage;
-                    report(`Storage quota estimate: you can write up to ${remaining} more bytes`);
-                });
-            });
-        });
-
-        // Check for service worker support and install the service worker
-        let registration;
-        check('navigator', navigator, 'serviceWorker', serviceWorker => {
-            window.addEventListener("load", () => {
-                serviceWorker.register("./sw.js").then(result => {
-                    if (!result) {
-                        report('"navigator.serviceWorker.register" returned null or undefined');
-                    } else {
-                        report('service worker registered');
-                        registration = result;
-                        if (result.periodicSync) {
-                            register_periodic_sync(result.periodicSync);
+        async function register_service_worker() {
+            return new Promise(resolve => {
+                if (services.serviceWorker) {
+                    window.addEventListener('load', async () => {
+                        registration = await services.serviceWorker.register('./sw.js');
+                        if (!registration) {
+                            report('"navigator.serviceWorker.register" returned null or undefined');
                         } else {
-                            report('"registration.periodicSync" is null or undefined');
+                            report('service worker registered');
+                            check('registration', registration, 'periodicSync');
+                            check('registration', registration, 'backgroundFetch');
+                            check('registration', registration, 'pushManager');
+                            check('registration', registration, 'sync');
+                            check('registration', registration, 'index');
                         }
-                        if (!result.backgroundFetch) {
-                            report('"registration.backgroundFetch" is null or undefined');
-                        }
-                        if (!result.pushManager) {
-                            report('"registration.pushManager" is null or undefined');
-                        }
-                        if (!result.sync) {
-                            report('"registration.sync" is null or undefined');
-                        }
-                        if (!result.index) {
-                            report('"registration.index" is null or undefined');
-                        }
-                    }
-                });
+                        resolve();
+                    });
+                }
             });
-        });
+        }
+
+        let periodic_sync_registered = false;
+
+        async function try_register_periodic_sync() {
+            if (!periodic_sync_registered) {
+                try {
+                    await periodicSync.register(`content-sync`, {
+                        minInterval: 60 * 60 * 1000, // 1 hour
+                    });
+                    report(`periodic sync registered`);
+                    periodic_sync_registered = true;
+                } catch (e) {
+                    report(`periodic sync failed to register: ${e}`);
+                }
+            }
+        }
+
+        async function register_periodic_sync() {
+            if (registration.periodicSync) {
+                const status = await navigator.permissions.query({
+                    name: 'periodic-background-sync'
+                });
+                if (status) {
+                    report(`"periodic-background-sync" permission status state: ${status.state}`);
+                    if (status.state === 'granted') {
+                        await try_register_periodic_sync();
+                    }
+                    status.onchange = async () => {
+                        report(`"periodic-background-sync" permission status state changed: ${status.state}`);
+                        if (status.state === 'granted') {
+                            await try_register_periodic_sync();
+                        }
+                    };
+                } else {
+                    report('"periodic-background-sync" permission status is null or undefined');
+                }
+            }
+        }
+
+        async function main() {
+            check_capabilities();
+            await check_storage_quota();
+            await register_service_worker();
+            await register_periodic_sync();
+        }
+
+        main();
 	</script>
 </body>
