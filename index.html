@@ -38,7 +38,7 @@
             await check('navigator', navigator, 'storage', async storage => {
                 services.storage = storage;
                 await check('navigator.storage', storage, 'estimate', async estimate => {
-                    services.estimate = await estimate();
+                    services.estimate = await storage.estimate();
                 });
             });
 
