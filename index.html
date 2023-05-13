@@ -23,7 +23,7 @@
             if (child_name in parent_value) {
                 const child = parent_value[child_name];
                 if (child) {
-                    return budy ? body(child) : undefined;
+                    return body ? body(child) : undefined;
                 } else {
                     report(`"${parent_name}.${child_name}" is null or undefined`);
                 }
