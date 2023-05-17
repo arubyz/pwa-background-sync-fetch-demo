@@ -33,6 +33,19 @@
             }
         }
 
+        let loaded = false;
+        window.addEventListener('load', () => loaded = true);
+
+        function wait_for_load() {
+            return new Promise(async resolve => {
+                if (!loaded) {
+                    window.addEventListener('load', resolve);
+                } else {
+                    resolve();
+                }
+            });
+        }
+
         const services = {};
 
         async function check_capabilities() {
@@ -58,33 +71,27 @@
 
         let registration = undefined;
 
-        function register_service_worker() {
+        async function register_service_worker() {
             console.log('register_service_worker: enter');
-            return new Promise(resolve => {
-                console.log('register_service_worker: running promise');
-                if (services.serviceWorker) {
-                    console.log('register_service_worker: listening for load event');
-                    window.addEventListener('load', async () => {
-                        console.log('register_service_worker: load event received, registering service worker');
-                        registration = await services.serviceWorker.register('./sw.js');
-                        if (!registration) {
-                            report('"navigator.serviceWorker.register" returned null or undefined');
-                        } else {
-                            report('service worker registered');
-                            check('registration', registration, 'periodicSync');
-                            check('registration', registration, 'backgroundFetch');
-                            check('registration', registration, 'pushManager');
-                            check('registration', registration, 'sync');
-                            check('registration', registration, 'index');
-                        }
-                        console.log('register_service_worker: resolving promise (1)');
-                        resolve();
-                    });
+            await wait_for_load();
+            console.log('register_service_worker: load event received');
+            if (services.serviceWorker) {
+                console.log('register_service_worker: registering service worker');
+                registration = await services.serviceWorker.register('./sw.js');
+                if (!registration) {
+                    report('"navigator.serviceWorker.register" returned null or undefined');
                 } else {
-                    console.log('register_service_worker: resolving promise (2)');
-                    resolve();
+                    report('service worker registered');
+                    check('registration', registration, 'periodicSync');
+                    check('registration', registration, 'backgroundFetch');
+                    check('registration', registration, 'pushManager');
+                    check('registration', registration, 'sync');
+                    check('registration', registration, 'index');
                 }
-            });
+                console.log('register_service_worker: resolving promise (1)');
+            } else {
+                console.log('register_service_worker: resolving promise (2)');
+            }
         }
 
         let periodic_sync_registered = false;
