@@ -58,10 +58,14 @@
 
         let registration = undefined;
 
-        async function register_service_worker() {
+        function register_service_worker() {
+            console.log('register_service_worker: enter');
             return new Promise(resolve => {
+                console.log('register_service_worker: running promise');
                 if (services.serviceWorker) {
+                    console.log('register_service_worker: listening for load event');
                     window.addEventListener('load', async () => {
+                        console.log('register_service_worker: load event received, registering service worker');
                         registration = await services.serviceWorker.register('./sw.js');
                         if (!registration) {
                             report('"navigator.serviceWorker.register" returned null or undefined');
@@ -73,8 +77,12 @@
                             check('registration', registration, 'sync');
                             check('registration', registration, 'index');
                         }
+                        console.log('register_service_worker: resolving promise (1)');
                         resolve();
                     });
+                } else {
+                    console.log('register_service_worker: resolving promise (2)');
+                    resolve();
                 }
             });
         }
