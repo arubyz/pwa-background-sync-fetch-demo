@@ -69,17 +69,30 @@
             }
         }
 
-        let channel = undefined;
+        // BroadcastChannel instances only send messages to OTHER instances -- they don't receive
+        // the messages they send.  Therefore to send and receive we need two instances.
+        let channelSend = undefined;
+        let channelReceive = undefined;
 
         async function check_broadcast_channel() {
             try {
-                channel = new BroadcastChannel('test-channel');
-                report('sending broadcast channel event');
-                channel.addEventListener('message', event => {
-                    report(`received broadcast channel event: ${JSON.stringify(event)}`);
-                });
+                const channelName = 'test-channel';
+                channelSend = new BroadcastChannel(channelName);
+                channelReceive = new BroadcastChannel(channelName);
             } catch (e) {
                 report(`failed to create broadcast channel: ${e}`);
+            }
+
+            if (channelReceive) {
+                channelReceive.addEventListener('message', event => {
+                    report(`received broadcast channel event: ${JSON.stringify(event.data)}`);
+                });
+            }
+
+            if (channelSend) {
+                data = { message_name: 'test-event' };
+                report(`sending broadcast channel event: ${JSON.stringify(data)}`);
+                channelSend.postMessage(data);
             }
         }
 
