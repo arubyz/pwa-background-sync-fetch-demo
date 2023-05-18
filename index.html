@@ -69,6 +69,20 @@
             }
         }
 
+        let channel = undefined;
+
+        async function check_broadcast_channel() {
+            try {
+                channel = new BroadcastChannel('test-channel');
+                report('sending broadcast channel event');
+                channel.addEventListener('message', event => {
+                    report(`received broadcast channel event: ${JSON.stringify(event)}`);
+                });
+            } catch (e) {
+                report(`failed to create broadcast channel: ${e}`);
+            }
+        }
+
         let registration = undefined;
 
         async function register_service_worker() {
@@ -135,6 +149,7 @@
         async function main() {
             await check_capabilities();
             await check_storage_quota();
+            await check_broadcast_channel();
             await register_service_worker();
             await register_periodic_sync();
         }
