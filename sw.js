@@ -19,6 +19,7 @@ async function fetch_content() {
 for (const key in self) {
     if(/^on/.test(key)) {
         const eventType = key.substr(2);
+		report(`registering for service worker event ${eventType}`);
         target.addEventListener(eventType, event => {
 			report(`service worker ${eventType} event received received: ${JSON.stringify(event)}`);
 		});
