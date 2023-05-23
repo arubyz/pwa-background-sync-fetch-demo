@@ -122,16 +122,19 @@
             }
         }
 
-        let periodic_sync_registered = false;
+        let periodic_sync_registration = undefined;
 
         async function try_register_periodic_sync() {
-            if (!periodic_sync_registered) {
+            if (!periodic_sync_registration) {
                 try {
-                    await registration.periodicSync.register(`content-sync`, {
+                    periodic_sync_registration = await registration.periodicSync.register(`content-sync`, {
                         minInterval: 60 * 60 * 1000, // 1 hour
                     });
-                    report(`periodic sync registered`);
-                    periodic_sync_registered = true;
+                    if (periodic_sync_registration) {
+                        report(`periodic sync registered: ${JSON.stringify(periodic_sync_registration)}`);
+                    } else {
+                        report('periodic sync registration returned null or undefined');
+                    }
                 } catch (e) {
                     report(`periodic sync failed to register: ${e}`);
                 }
@@ -161,7 +164,7 @@
         }
 
         async function main() {
-            report('build: 2');
+            report('build: 3');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();

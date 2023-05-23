@@ -16,13 +16,13 @@ async function fetch_content() {
 }
 
 self.addEventListener('install', event => {
-	report(`install event received: ${event}`);
+	report(`install event received: ${JSON.stringify(event)}`);
 	// Kick out the old service worker
 	self.skipWaiting();
 });
 
 self.addEventListener('periodicsync', (event) => {
-	report(`periodicsync event received: ${event}`);
+	report(`periodicsync event received: ${JSON.stringify(event)}`);
 	if (event.tag === 'content-sync') {
 		event.waitUntil(fetch_content());
 	}
