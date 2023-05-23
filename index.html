@@ -127,7 +127,7 @@
         async function try_register_periodic_sync() {
             if (!periodic_sync_registered) {
                 try {
-                    await periodicSync.register(`content-sync`, {
+                    await registration.periodicSync.register(`content-sync`, {
                         minInterval: 60 * 60 * 1000, // 1 hour
                     });
                     report(`periodic sync registered`);
