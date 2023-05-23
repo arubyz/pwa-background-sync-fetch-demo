@@ -11,6 +11,11 @@
             "src": "favicon.png",
             "sizes": "36x36",
             "type": "image/png"
+        },
+        {
+            "src": "icon.jpeg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
         }
 	]
 }
