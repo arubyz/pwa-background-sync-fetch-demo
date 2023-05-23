@@ -13,7 +13,6 @@ function report(result) {
 }
 
 async function fetch_content() {
-	report('periodicsync event received');
 }
 
 self.addEventListener('install', event => {
@@ -22,6 +21,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('periodicsync', (event) => {
+	report(`periodicsync event received: ${event}`);
 	if (event.tag === 'content-sync') {
 		event.waitUntil(fetch_content());
 	}
