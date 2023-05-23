@@ -15,14 +15,22 @@ function report(result) {
 async function fetch_content() {
 }
 
+// Listeneing to every possible service worker event to report on them
+for (const key in self) {
+    if(/^on/.test(key)) {
+        const eventType = key.substr(2);
+        target.addEventListener(eventType, event => {
+			report(`service worker ${eventType} event received received: ${JSON.stringify(event)}`);
+		});
+    }
+}
+
 self.addEventListener('install', event => {
-	report(`install event received: ${JSON.stringify(event)}`);
 	// Kick out the old service worker
 	self.skipWaiting();
 });
 
 self.addEventListener('periodicsync', (event) => {
-	report(`periodicsync event received: ${JSON.stringify(event)}`);
 	if (event.tag === 'content-sync') {
 		event.waitUntil(fetch_content());
 	}
