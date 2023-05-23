@@ -16,6 +16,7 @@ async function fetch_content() {
 }
 
 self.addEventListener('install', event => {
+	report(`install event received: ${event}`);
 	// Kick out the old service worker
 	self.skipWaiting();
 });
