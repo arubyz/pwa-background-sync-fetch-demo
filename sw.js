@@ -9,7 +9,9 @@ const channelName = 'test-channel';
 const channelSend = new BroadcastChannel(channelName);
 
 function report(result) {
-	channelSend.postMessage({ result });
+	const data = { result };
+	console.log(`service worker sending message: ${data}`);
+	channelSend.postMessage(data);
 }
 
 async function fetch_content() {
