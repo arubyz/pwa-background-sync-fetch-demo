@@ -23,10 +23,10 @@ for (const key in self) {
         const eventType = key.substr(2);
 		report(`registering for service worker event ${eventType}`);
         self.addEventListener(eventType, event => {
-			if (eventType === 'fetch') {
-				report(`service worker FETCH event received received: (${event.request.url}) ${JSON.stringify(event.request)}`);
+			if (event instanceof FetchEvent) {
+				report(`service worker FetchEvent received: ${event.request.method} ${event.request.url}`);
 			} else {
-				report(`service worker ${eventType} event received received: ${JSON.stringify(event)}`);
+				report(`service worker ${eventType} event received: ${JSON.stringify(event)}`);
 			}
 		});
     }
