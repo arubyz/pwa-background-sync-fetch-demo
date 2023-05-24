@@ -16,15 +16,6 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function report(result) {
-            console.log(`main page message: ${result}`);
-
-            const timestamp = (new Date()).toString();
-            localStorage.setItem(timestamp, result);
-
-            refresh_log();
-        }
-
         function refresh_log() {
             // Get all keys in local storage ordered by timestamp
             let keys = [];
@@ -44,13 +35,38 @@
             ul.innerHTML = '';
             for (let key of keys) {
                 const li = document.createElement('li');
-                li.innerText = localStorage.getItem(key);
+                const result = localStorage.getItem(key);
+                li.innerText = `[${key}] ${result}`;
                 ul.appendChild(li);
             }
         }
 
         // Show whatever's already in the log on page load
         refresh_log();
+
+        function report_raw(result) {
+            const timestamp = (new Date()).toString();
+            localStorage.setItem(timestamp, result);
+
+            refresh_log();
+        }
+
+        function report(result) {
+            console.log(`main page message: ${result}`);
+            report(`PAGE: ${result}`);
+        }
+
+        // The service worker will send a broadcast event to report results,
+        // since localStorage can't be accessed from a worker
+        try {
+            const channelName = 'log-channel';
+            const logChannel = new BroadcastChannel(channelName);
+            logChannel.addEventListener('message', event => {
+                report(`SW: ${result}`);
+            });
+        } catch (e) {
+            report(`failed to create "${channelName}" broadcast channel: ${e}`);
+        }
 
         function check(parent_name, parent_value, child_name, body = undefined) {
             if (child_name in parent_value) {
@@ -113,18 +129,18 @@
                 channelSend = new BroadcastChannel(channelName);
                 channelReceive = new BroadcastChannel(channelName);
             } catch (e) {
-                report(`failed to create broadcast channel: ${e}`);
+                report(`failed to create "${channelName}" broadcast channel: ${e}`);
             }
 
             if (channelReceive) {
                 channelReceive.addEventListener('message', event => {
-                    report(`received broadcast channel event: ${JSON.stringify(event.data)}`);
+                    report(`received "${channelName}" broadcast channel event: ${JSON.stringify(event.data)}`);
                 });
             }
 
             if (channelSend) {
                 data = { message_name: 'test-event' };
-                report(`sending broadcast channel event: ${JSON.stringify(data)}`);
+                report(`sending "${channelName}" broadcast channel event: ${JSON.stringify(data)}`);
                 channelSend.postMessage(data);
             }
         }
@@ -203,7 +219,7 @@
         }
 
         async function main() {
-            report('-------------------- loading main page (build 16)');
+            report('-------------------- loading main page (build 17)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();

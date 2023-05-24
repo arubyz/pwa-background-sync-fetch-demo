@@ -5,7 +5,7 @@ let manifest_counter = 1;
 
 const registration = self.registration;
 
-const channelName = 'test-channel';
+const channelName = 'log-channel';
 const channelSend = new BroadcastChannel(channelName);
 
 function report(result) {
@@ -18,7 +18,7 @@ function report(result) {
 async function fetch_content() {
 }
 
-report('-------------------- loading service worker (build 16)');
+report('-------------------- loading service worker (build 17)');
 
 // Listeneing to every possible service worker event to report on them
 for (const key in self) {
