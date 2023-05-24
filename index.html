@@ -22,7 +22,6 @@
             const timestamp = (new Date()).toString();
             localStorage.setItem(timestamp, result);
 
-            // The 'storage' event only fires for changes made by OTHER pages (or the service worker)
             refresh_log();
         }
 
@@ -50,8 +49,7 @@
             }
         }
 
-        // Show whatever's already in the log, and refresh it on updates
-        window.addEventListener('storage', refresh_log);
+        // Show whatever's already in the log on page load
         refresh_log();
 
         function check(parent_name, parent_value, child_name, body = undefined) {
@@ -205,7 +203,7 @@
         }
 
         async function main() {
-            report('loading main page (build 15)');
+            report('-------------------- loading main page (build 16)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();

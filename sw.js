@@ -11,14 +11,14 @@ const channelSend = new BroadcastChannel(channelName);
 function report(result) {
 	console.log(`service worker message: ${result}`);
 
-	const timestamp = (new Date()).toString();
-	localStorage.setItem(timestamp, result);
+	const data = { result };
+	channelSend.postMessage(data);
 }
 
 async function fetch_content() {
 }
 
-report('loading service worker (build 15)');
+report('-------------------- loading service worker (build 16)');
 
 // Listeneing to every possible service worker event to report on them
 for (const key in self) {
