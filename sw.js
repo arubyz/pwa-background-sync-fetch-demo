@@ -18,7 +18,7 @@ function report(result) {
 async function fetch_content() {
 }
 
-report('-------------------- loading service worker (build 17)');
+report('-------------------- loading service worker (build 18)');
 
 // Listeneing to every possible service worker event to report on them
 for (const key in self) {

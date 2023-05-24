@@ -45,7 +45,7 @@
         refresh_log();
 
         function report_raw(result) {
-            const timestamp = (new Date()).toString();
+            const timestamp = (new Date()).toISOString();
             localStorage.setItem(timestamp, result);
 
             refresh_log();
@@ -219,7 +219,7 @@
         }
 
         async function main() {
-            report('-------------------- loading main page (build 17)');
+            report('-------------------- loading main page (build 18)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
