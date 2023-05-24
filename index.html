@@ -63,7 +63,7 @@
             const channelName = 'log-channel';
             logChannel = new BroadcastChannel(channelName);
             logChannel.addEventListener('message', event => {
-                report_raw(`SW: ${result}`);
+                report_raw(`SW: ${event.data}`);
             });
         } catch (e) {
             report(`failed to create "${channelName}" broadcast channel: ${e}`);
@@ -220,7 +220,7 @@
         }
 
         async function main() {
-            report('-------------------- loading main page (build 20)');
+            report('-------------------- loading main page (build 21)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
