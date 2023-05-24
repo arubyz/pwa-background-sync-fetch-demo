@@ -128,9 +128,10 @@
             if (!periodic_sync_registered) {
                 try {
                     // PeriodicSyncManager.register returns a promise resolving to undefined
-                    const sync_period_hours = 24;
+                    const sync_period_hours = 0;
+                    const sync_period_minutes = 5;
                     await registration.periodicSync.register('content-sync', {
-                        minInterval: sync_period_hours * 60 * 60 * 1000,
+                        minInterval: sync_period_hours * 60 * 60 * 1000 + sync_period_minutes * 60 * 1000,
                     });
                     report('periodic sync registered');
                     periodic_sync_registered = true;
@@ -170,7 +171,7 @@
         }
 
         async function main() {
-            report('build: 11');
+            report('build: 12');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
