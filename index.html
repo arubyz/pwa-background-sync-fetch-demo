@@ -58,9 +58,10 @@
 
         // The service worker will send a broadcast event to report results,
         // since localStorage can't be accessed from a worker
+        let logChannel = undefined;
         try {
             const channelName = 'log-channel';
-            const logChannel = new BroadcastChannel(channelName);
+            logChannel = new BroadcastChannel(channelName);
             logChannel.addEventListener('message', event => {
                 report_raw(`SW: ${result}`);
             });
@@ -219,7 +220,7 @@
         }
 
         async function main() {
-            report('-------------------- loading main page (build 18)');
+            report('-------------------- loading main page (build 19)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
