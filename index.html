@@ -125,8 +125,8 @@
         let channelReceive = undefined;
 
         async function check_broadcast_channel() {
+            const channelName = 'test-channel';
             try {
-                const channelName = 'test-channel';
                 channelSend = new BroadcastChannel(channelName);
                 channelReceive = new BroadcastChannel(channelName);
             } catch (e) {
@@ -220,7 +220,7 @@
         }
 
         async function main() {
-            report('-------------------- loading main page (build 19)');
+            report('-------------------- loading main page (build 20)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
