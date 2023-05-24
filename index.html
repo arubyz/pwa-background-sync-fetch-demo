@@ -17,12 +17,42 @@
         }
 
         function report(result) {
-            console.log(result);
-            const ul = document.getElementById('results');
-            const li = document.createElement('li');
-            li.innerText = result;
-            ul.appendChild(li);
+            console.log(`main page message: ${result}`);
+
+            const timestamp = (new Date()).toString();
+            localStorage.setItem(timestamp, result);
+
+            // The 'storage' event only fires for changes made by OTHER pages (or the service worker)
+            refresh_log();
         }
+
+        function refresh_log() {
+            // Get all keys in local storage ordered by timestamp
+            let keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                keys.push(localStorage.key(i));
+            }
+            keys.sort();
+
+            // Remove old log entries
+            while (100 < keys.length) {
+                const oldest_key = keys.shift();
+                localStorage.removeItem(oldest_key);
+            }
+
+            // Re-build the list of log items in the DOM
+            const ul = document.getElementById('results');
+            ul.innerHTML = '';
+            for (let key of keys) {
+                const li = document.createElement('li');
+                li.innerText = localStorage.getItem(key);
+                ul.appendChild(li);
+            }
+        }
+
+        // Show whatever's already in the log, and refresh it on updates
+        window.addEventListener('storage', refresh_log);
+        refresh_log();
 
         function check(parent_name, parent_value, child_name, body = undefined) {
             if (child_name in parent_value) {
@@ -175,7 +205,7 @@
         }
 
         async function main() {
-            report('build: 13');
+            report('loading main page (build 14)');
             await check_capabilities();
             await check_storage_quota();
             await check_broadcast_channel();
