@@ -53,7 +53,7 @@
 
         function report(result) {
             console.log(`main page message: ${result}`);
-            report(`PAGE: ${result}`);
+            report_raw(`PAGE: ${result}`);
         }
 
         // The service worker will send a broadcast event to report results,
@@ -62,7 +62,7 @@
             const channelName = 'log-channel';
             const logChannel = new BroadcastChannel(channelName);
             logChannel.addEventListener('message', event => {
-                report(`SW: ${result}`);
+                report_raw(`SW: ${result}`);
             });
         } catch (e) {
             report(`failed to create "${channelName}" broadcast channel: ${e}`);
